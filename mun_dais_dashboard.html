@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUN Dais Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg-primary:#0f172a;--bg-secondary:#1e293b;--bg-tertiary:#334155;--bg-card:#1e293b;--bg-hover:#283548;
+--text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;
+--border:#334155;--border-light:#475569;
+--green:#22c55e;--green-dim:#14532d;--green-glow:rgba(34,197,94,0.3);
+--yellow:#eab308;--yellow-dim:#713f12;--yellow-glow:rgba(234,179,8,0.3);
+--red:#ef4444;--red-dim:#7f1d1d;--red-glow:rgba(239,68,68,0.3);
+--blue:#3b82f6;--blue-dim:#1e3a8a;--blue-glow:rgba(59,130,246,0.3);
+--purple:#a855f7;--orange:#f97316;--cyan:#06b6d4;--accent:#0ea5e9;
+--shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-lg:0 10px 25px -5px rgba(0,0,0,0.5);--radius:10px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-primary); color:var(--text-primary); line-height:1.5; min-height:100vh; overflow-x:hidden; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--bg-primary); }
+::-webkit-scrollbar-thumb { background:var(--bg-tertiary); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--border-light); }
+
+.header { background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%); border-bottom:1px solid var(--border); padding:0.75rem 1.5rem; position:sticky; top:0; z-index:1000; backdrop-filter:blur(12px); }
+.header-content { max-width:1600px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.brand { display:flex; align-items:center; gap:0.75rem; }
+.brand-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--blue),var(--purple)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 0 20px var(--blue-glow); }
+.brand-text h1 { font-size:1.1rem; font-weight:800; letter-spacing:-0.02em; }
+.brand-text p { font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.15em; }
+.header-center { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.session-phase { background:var(--bg-secondary); border:1px solid var(--border); padding:0.5rem 1rem; border-radius:var(--radius); font-size:0.8rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; color:var(--accent); }
+.phase-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green-glow); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.9)} }
+.timer-display { background:var(--bg-secondary); border:1px solid var(--border); padding:0.5rem 1rem; border-radius:var(--radius); font-family:'SF Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--green); letter-spacing:0.05em; min-width:100px; text-align:center; }
+.timer-display.warning { color:var(--yellow); border-color:var(--yellow); }
+.timer-display.critical { color:var(--red); border-color:var(--red); animation:blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.header-actions { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
+
+.btn { padding:0.5rem 1rem; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); border-radius:8px; font-family:inherit; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.15s ease; display:inline-flex; align-items:center; gap:0.4rem; }
+.btn:hover { background:var(--bg-hover); color:var(--text-primary); border-color:var(--border-light); transform:translateY(-1px); }
+.btn-primary { background:linear-gradient(135deg,var(--blue),var(--purple)); color:white; border:none; box-shadow:0 4px 12px var(--blue-glow); }
+.btn-primary:hover { box-shadow:0 6px 20px var(--blue-glow); }
+.btn-danger { background:linear-gradient(135deg,var(--red),#dc2626); color:white; border:none; box-shadow:0 4px 12px var(--red-glow); }
+.btn-success { background:linear-gradient(135deg,var(--green),#16a34a); color:white; border:none; box-shadow:0 4px 12px var(--green-glow); }
+.btn-warning { background:linear-gradient(135deg,var(--yellow),#ca8a04); color:#1a1a1a; border:none; }
+.btn-sm { padding:0.375rem 0.75rem; font-size:0.75rem; }
+.btn-lg { padding:0.75rem 1.5rem; font-size:0.9rem; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
+
+.app-container { max-width:1600px; margin:0 auto; display:grid; grid-template-columns:260px 1fr 340px; gap:1rem; padding:1rem; min-height:calc(100vh - 70px); }
+@media(max-width:1200px){ .app-container{grid-template-columns:220px 1fr} .right-panel{display:none} }
+@media(max-width:768px){ .app-container{grid-template-columns:1fr; padding:0.5rem} .left-panel{display:none} }
+
+.panel { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.panel-header { padding:0.875rem 1rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); flex-wrap:wrap; gap:0.5rem; }
+.panel-title { font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-secondary); display:flex; align-items:center; gap:0.5rem; }
+.panel-body { padding:0.75rem; }
+
+.nav-menu { list-style:none; }
+.nav-item { padding:0.625rem 0.875rem; margin-bottom:0.25rem; border-radius:8px; cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; gap:0.625rem; font-size:0.85rem; font-weight:500; color:var(--text-secondary); border:1px solid transparent; }
+.nav-item:hover { background:var(--bg-hover); color:var(--text-primary); }
+.nav-item.active { background:linear-gradient(90deg,var(--blue-dim),transparent); color:var(--blue); border-color:var(--blue); border-left:3px solid var(--blue); }
+.nav-item .nav-icon { width:24px; text-align:center; font-size:1rem; }
+.nav-item .nav-status { margin-left:auto; width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green-glow); }
+.nav-item .nav-status.inactive { background:var(--text-muted); box-shadow:none; }
+
+.phase-content { display:none; }
+.phase-content.active { display:block; }
+
+.rollcall-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:0.75rem; }
+.delegate-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; display:flex; align-items:center; gap:0.875rem; transition:all 0.2s ease; }
+.delegate-card:hover { border-color:var(--border-light); transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+.delegate-card.present { border-color:var(--green); box-shadow:0 0 0 1px var(--green),0 4px 12px var(--green-glow); }
+.delegate-card.voting { border-color:var(--blue); box-shadow:0 0 0 1px var(--blue),0 4px 12px var(--blue-glow); }
+.delegate-card.absent { opacity:0.5; }
+.flag-container { width:48px; height:36px; border-radius:4px; overflow:hidden; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.3); background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; }
+.flag-container img { width:100%; height:100%; object-fit:cover; }
+.delegate-info { flex:1; min-width:0; }
+.delegate-name { font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.delegate-code { font-size:0.7rem; color:var(--text-muted); margin-top:0.125rem; }
+.delegate-actions { display:flex; gap:0.375rem; }
+.status-btn { padding:0.375rem 0.625rem; border:1px solid var(--border); background:var(--bg-tertiary); color:var(--text-secondary); border-radius:6px; font-size:0.7rem; font-weight:600; cursor:pointer; transition:all 0.15s ease; }
+.status-btn:hover { background:var(--bg-hover); }
+.status-btn.active-present { background:var(--green); color:white; border-color:var(--green); }
+.status-btn.active-voting { background:var(--blue); color:white; border-color:var(--blue); }
+
+.queue-container { background:var(--bg-secondary); border-radius:var(--radius); padding:1rem; margin-bottom:1rem; }
+.queue-list { list-style:none; }
+.queue-item { display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0.75rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; margin-bottom:0.5rem; transition:all 0.15s ease; }
+.queue-item:hover { border-color:var(--border-light); }
+.queue-item.speaking { border-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-primary)); box-shadow:0 0 12px var(--green-glow); }
+.queue-number { width:28px; height:28px; border-radius:50%; background:var(--bg-tertiary); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+.queue-item.speaking .queue-number { background:var(--green); color:white; animation:pulse 2s infinite; }
+.queue-remove { margin-left:auto; color:var(--red); cursor:pointer; opacity:0.6; }
+.queue-remove:hover { opacity:1; }
+
+.timer-controls { display:flex; gap:0.5rem; align-items:center; margin:1rem 0; flex-wrap:wrap; }
+.timer-input { width:70px; padding:0.5rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:inherit; font-size:0.9rem; text-align:center; }
+.timer-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+
+.voting-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:1rem 0; }
+.vote-card { background:var(--bg-secondary); border:2px solid var(--border); border-radius:var(--radius); padding:1.5rem; text-align:center; cursor:pointer; transition:all 0.2s ease; }
+.vote-card:hover { transform:translateY(-3px); }
+.vote-card.yes { border-color:var(--green); }
+.vote-card.yes:hover { background:var(--green-dim); box-shadow:0 0 20px var(--green-glow); }
+.vote-card.no { border-color:var(--red); }
+.vote-card.no:hover { background:var(--red-dim); box-shadow:0 0 20px var(--red-glow); }
+.vote-card.abstain { border-color:var(--yellow); }
+.vote-card.abstain:hover { background:var(--yellow-dim); box-shadow:0 0 20px var(--yellow-glow); }
+.vote-count { font-size:2.5rem; font-weight:800; margin:0.5rem 0; }
+.vote-label { font-size:0.875rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; }
+
+.motion-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; margin-bottom:0.75rem; }
+.motion-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem; }
+.motion-title { font-weight:700; font-size:0.9rem; }
+.motion-meta { font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; }
+.motion-actions { display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap; }
+
+.badge { display:inline-flex; align-items:center; padding:0.25rem 0.625rem; border-radius:4px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+.badge-friendly { background:var(--green-dim); color:var(--green); border:1px solid var(--green); }
+.badge-unfriendly { background:var(--red-dim); color:var(--red); border:1px solid var(--red); }
+.badge-passed { background:var(--green-dim); color:var(--green); }
+.badge-failed { background:var(--red-dim); color:var(--red); }
+.badge-pending { background:var(--yellow-dim); color:var(--yellow); }
+.badge-seconded { background:var(--blue-dim); color:var(--blue); }
+
+.form-group { margin-bottom:1rem; }
+.form-label { display:block; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.375rem; }
+.form-input,.form-select,.form-textarea { width:100%; padding:0.625rem 0.875rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:inherit; font-size:0.85rem; transition:all 0.15s ease; }
+.form-input:focus,.form-select:focus,.form-textarea:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+.form-textarea { min-height:100px; resize:vertical; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.625rem; }
+.stat-box { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.875rem; text-align:center; }
+.stat-value { font-size:1.5rem; font-weight:800; color:var(--text-primary); }
+.stat-label { font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.25rem; }
+
+.rec-list { list-style:none; }
+.rec-item { display:flex; align-items:center; gap:0.625rem; padding:0.625rem; border-radius:8px; margin-bottom:0.375rem; cursor:pointer; transition:all 0.15s ease; border:1px solid transparent; }
+.rec-item:hover { background:var(--bg-hover); border-color:var(--border); }
+.rec-rank { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; flex-shrink:0; }
+.rank-gold { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#1a1a1a; }
+.rank-silver { background:linear-gradient(135deg,#94a3b8,#64748b); color:white; }
+.rank-bronze { background:linear-gradient(135deg,#b45309,#92400e); color:white; }
+.rank-other { background:var(--bg-tertiary); color:var(--text-muted); }
+.rec-name { font-weight:500; font-size:0.8rem; flex:1; }
+.rec-stats { font-size:0.7rem; color:var(--text-muted); text-align:right; }
+
+.progress-bar { width:100%; height:6px; background:var(--bg-tertiary); border-radius:3px; overflow:hidden; margin:0.5rem 0; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--purple)); border-radius:3px; transition:width 0.3s ease; }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:2000; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+.modal-overlay.active { opacity:1; pointer-events:all; }
+.modal { background:var(--bg-secondary); border:1px solid var(--border); border-radius:16px; padding:1.5rem; max-width:500px; width:90%; box-shadow:var(--shadow-lg); transform:translateY(20px) scale(0.95); transition:all 0.3s ease; }
+.modal-overlay.active .modal { transform:translateY(0) scale(1); }
+.modal h2 { font-size:1.25rem; margin-bottom:0.5rem; }
+.modal p { color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.9rem; }
+.role-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+.role-card { padding:1.25rem 1rem; border:2px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s ease; text-align:center; }
+.role-card:hover { border-color:var(--blue); background:linear-gradient(135deg,var(--blue-dim),transparent); transform:translateY(-2px); }
+.role-icon { font-size:1.75rem; margin-bottom:0.375rem; }
+.role-name { font-weight:700; font-size:0.9rem; }
+.role-desc { font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem; }
+
+.toast-container { position:fixed; bottom:1.5rem; right:1.5rem; z-index:3000; display:flex; flex-direction:column; gap:0.5rem; }
+.toast { background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-primary); padding:0.875rem 1.25rem; border-radius:10px; box-shadow:var(--shadow-lg); font-size:0.85rem; font-weight:500; display:flex; align-items:center; gap:0.75rem; animation:slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; max-width:380px; border-left:3px solid var(--blue); }
+.toast.success { border-left-color:var(--green); }
+.toast.warning { border-left-color:var(--yellow); }
+.toast.error { border-left-color:var(--red); }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes fadeOut { to{opacity:0;transform:translateX(100%)} }
+
+.flash-update { animation:flash 0.5s ease; }
+@keyframes flash { 0%{background:var(--blue-dim)} 100%{background:transparent} }
+
+@media print { .header-actions,.left-panel,.right-panel,.modal-overlay,.toast-container,.btn:not(.btn-primary){display:none !important} body{background:white;color:black} .panel{border:1px solid #ccc;box-shadow:none} }
+</style>
+</head>
+<body>
+
+<!-- ROLE SELECTOR -->
+<div class="modal-overlay active" id="roleSelector">
+<div class="modal" style="max-width:520px">
+<div style="text-align:center;margin-bottom:1.5rem">
+<div style="font-size:3rem;margin-bottom:0.5rem">🌍</div>
+<h2 style="font-size:1.5rem">MUN Dais Command Center</h2>
+<p style="color:var(--text-secondary)">Select your role to access appropriate controls</p>
+</div>
+<div class="role-grid">
+<div class="role-card" onclick="selectRole('chair')">
+<div class="role-icon">👔</div>
+<div class="role-name">Chair</div>
+<div class="role-desc">Session control, view-only data, final decisions</div>
+</div>
+<div class="role-card" onclick="selectRole('cochair')">
+<div class="role-icon">📝</div>
+<div class="role-name">Co-Chair</div>
+<div class="role-desc">Queue management, timers, voting counts</div>
+</div>
+<div class="role-card" onclick="selectRole('secretary')">
+<div class="role-icon">✋</div>
+<div class="role-name">Secretary</div>
+<div class="role-desc">Logging, attendance, motions, reports</div>
+</div>
+<div class="role-card" onclick="selectRole('rapporteur')">
+<div class="role-icon">📋</div>
+<div class="role-name">Rapporteur</div>
+<div class="role-desc">Notes, observations, document tracking</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="confirmModal">
+<div class="modal">
+<h3 id="modalTitle">Confirm Action</h3>
+<p id="modalMessage">Are you sure?</p>
+<div style="display:flex;gap:0.75rem;justify-content:flex-end">
+<button class="btn" onclick="closeModal()">Cancel</button>
+<button class="btn btn-danger" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- MOTION FORM MODAL -->
+<div class="modal-overlay" id="motionModal">
+<div class="modal">
+<h3>New Motion</h3>
+<div class="form-group">
+<label class="form-label">Motion Type</label>
+<select class="form-select" id="motionType">
+<option value="moderated">Moderated Caucus</option>
+<option value="unmoderated">Unmoderated Caucus</option>
+<option value="gsl">General Speakers List</option>
+<option value="suspend">Suspend Meeting</option>
+<option value="adjourn">Adjourn Meeting</option>
+<option value="close">Close Debate</option>
+<option value="introduce">Introduce Draft Resolution</option>
+<option value="amendment">Introduce Amendment</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label">Proposer</label>
+<select class="form-select" id="motionProposer"></select>
+</div>
+<div class="form-group">
+<label class="form-label">Seconder</label>
+<select class="form-select" id="motionSeconder"></select>
+</div>
+<div class="form-group">
+<label class="form-label">Details</label>
+<input type="text" class="form-input" id="motionDetails" placeholder="Duration, topic, etc.">
+</div>
+<div style="display:flex;gap:0.75rem;justify-content:flex-end">
+<button class="btn" onclick="closeModal('motionModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitMotion()">Submit Motion</button>
+</div>
+</div>
+</div>
+
+<!-- RESOLUTION FORM MODAL -->
+<div class="modal-overlay" id="resolutionModal">
+<div class="modal">
+<h3>New Draft Resolution</h3>
+<div class="form-group">
+<label class="form-label">Draft ID</label>
+<input type="text" class="form-input" id="draftId" placeholder="e.g., Draft 1.1">
+</div>
+<div class="form-group">
+<label class="form-label">Main Sponsor</label>
+<select class="form-select" id="resolutionSponsor"></select>
+</div>
+<div class="form-group">
+<label class="form-label">Signatories (comma-separated)</label>
+<input type="text" class="form-input" id="resolutionSignatories" placeholder="Country names...">
+</div>
+<div class="form-group">
+<label class="form-label">Content Summary</label>
+<textarea class="form-textarea" id="resolutionContent" placeholder="Brief description..."></textarea>
+</div>
+<div style="display:flex;gap:0.75rem;justify-content:flex-end">
+<button class="btn" onclick="closeModal('resolutionModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitResolution()">Register Draft</button>
+</div>
+</div>
+</div>
+
+<!-- AMENDMENT FORM MODAL -->
+<div class="modal-overlay" id="amendmentModal">
+<div class="modal">
+<h3>New Amendment</h3>
+<div class="form-group">
+<label class="form-label">Target Resolution</label>
+<select class="form-select" id="amendmentTarget"></select>
+</div>
+<div class="form-group">
+<label class="form-label">Amendment Type</label>
+<select class="form-select" id="amendmentType">
+<option value="friendly">Friendly</option>
+<option value="unfriendly">Unfriendly</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label">Proposer</label>
+<select class="form-select" id="amendmentProposer"></select>
+</div>
+<div class="form-group">
+<label class="form-label">Content</label>
+<textarea class="form-textarea" id="amendmentContent" placeholder="Amendment text..."></textarea>
+</div>
+<div style="display:flex;gap:0.75rem;justify-content:flex-end">
+<button class="btn" onclick="closeModal('amendmentModal')">Cancel</button>
+<button class="btn btn-primary" onclick="submitAmendment()">Submit Amendment</button>
+</div>
+</div>
+</div>
+
+<!-- ADD SPEAKER MODAL -->
+<div class="modal-overlay" id="speakerModal">
+<div class="modal">
+<h3>Add to Speakers List</h3>
+<div class="form-group">
+<label class="form-label">Select Delegate</label>
+<select class="form-select" id="speakerSelect"></select>
+</div>
+<div style="display:flex;gap:0.75rem;justify-content:flex-end">
+<button class="btn" onclick="closeModal('speakerModal')">Cancel</button>
+<button class="btn btn-primary" onclick="confirmAddSpeaker()">Add to Queue</button>
+</div>
+</div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+<div class="header-content">
+<div class="brand">
+<div class="brand-icon">UN</div>
+<div class="brand-text">
+<h1>Dais Command Center</h1>
+<p>Real-Time Diplomatic Session Management</p>
+</div>
+</div>
+<div class="header-center">
+<div class="session-phase">
+<span class="phase-dot"></span>
+<span id="currentPhase">Roll Call</span>
+</div>
+<div class="timer-display" id="mainTimer">00:00</div>
+</div>
+<div class="header-actions">
+<button class="btn btn-sm" onclick="toggleTimer()" id="timerBtn">⏵ Start</button>
+<button class="btn btn-sm" onclick="resetTimer()">⏹ Reset</button>
+<button class="btn btn-sm" onclick="showRoleSelector()">
+<span id="roleBadge">👔 Chair</span>
+</button>
+<button class="btn btn-sm" onclick="exportSession()">📊 Export</button>
+<button class="btn btn-danger btn-sm" onclick="showResetConfirm()">🔄 Reset</button>
+</div>
+</div>
+</header>
+
+<!-- MAIN APP -->
+<div class="app-container">
+
+<!-- LEFT SIDEBAR -->
+<div class="left-panel">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">📋 Session Phases</div>
+</div>
+<div class="panel-body">
+<ul class="nav-menu">
+<li class="nav-item active" data-phase="rollcall" onclick="switchPhase('rollcall')">
+<span class="nav-icon">📢</span><span>Roll Call</span><span class="nav-status" id="status-rollcall"></span>
+</li>
+<li class="nav-item" data-phase="agenda" onclick="switchPhase('agenda')">
+<span class="nav-icon">📑</span><span>Agenda Setting</span><span class="nav-status inactive" id="status-agenda"></span>
+</li>
+<li class="nav-item" data-phase="gsl" onclick="switchPhase('gsl')">
+<span class="nav-icon">🎤</span><span>Speakers List</span><span class="nav-status inactive" id="status-gsl"></span>
+</li>
+<li class="nav-item" data-phase="moderated" onclick="switchPhase('moderated')">
+<span class="nav-icon">⏱️</span><span>Moderated Caucus</span><span class="nav-status inactive" id="status-moderated"></span>
+</li>
+<li class="nav-item" data-phase="unmoderated" onclick="switchPhase('unmoderated')">
+<span class="nav-icon">🤝</span><span>Unmoderated Caucus</span><span class="nav-status inactive" id="status-unmoderated"></span>
+</li>
+<li class="nav-item" data-phase="resolution" onclick="switchPhase('resolution')">
+<span class="nav-icon">📄</span><span>Draft Resolution</span><span class="nav-status inactive" id="status-resolution"></span>
+</li>
+<li class="nav-item" data-phase="presentation" onclick="switchPhase('presentation')">
+<span class="nav-icon">🎯</span><span>Presentation</span><span class="nav-status inactive" id="status-presentation"></span>
+</li>
+<li class="nav-item" data-phase="amendments" onclick="switchPhase('amendments')">
+<span class="nav-icon">✏️</span><span>Amendments</span><span class="nav-status inactive" id="status-amendments"></span>
+</li>
+<li class="nav-item" data-phase="closing" onclick="switchPhase('closing')">
+<span class="nav-icon">🔒</span><span>Closing Debate</span><span class="nav-status inactive" id="status-closing"></span>
+</li>
+<li class="nav-item" data-phase="voting" onclick="switchPhase('voting')">
+<span class="nav-icon">🗳️</span><span>Voting Procedure</span><span class="nav-status inactive" id="status-voting"></span>
+</li>
+<li class="nav-item" data-phase="end" onclick="switchPhase('end')">
+<span class="nav-icon">🏁</span><span>Session End</span><span class="nav-status inactive" id="status-end"></span>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="panel" style="margin-top:1rem">
+<div class="panel-header">
+<div class="panel-title">📝 Session Log</div>
+</div>
+<div class="panel-body">
+<div id="sessionLog" style="max-height:300px;overflow-y:auto;font-size:0.8rem;color:var(--text-secondary)">
+<div style="padding:0.5rem;border-bottom:1px solid var(--border)">
+<span style="color:var(--text-muted)">[Start]</span> Session initialized
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CENTER CONTENT -->
+<div class="center-panel">
+
+<!-- ROLL CALL -->
+<div class="phase-content active" id="phase-rollcall">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">📢 Roll Call</div>
+<div><span id="rollcallProgress" style="font-size:0.8rem;color:var(--text-muted)">0/27 Present</span></div>
+</div>
+<div class="panel-body">
+<div class="progress-bar"><div class="progress-fill" id="rollcallBar" style="width:0%"></div></div>
+<div class="rollcall-grid" id="rollcallGrid"></div>
+<div style="display:flex;gap:0.75rem;margin-top:1rem;justify-content:center;flex-wrap:wrap">
+<button class="btn btn-success" onclick="markAllPresent()">Mark All Present</button>
+<button class="btn" onclick="resetAttendance()">Reset</button>
+<button class="btn btn-primary" onclick="finalizeRollCall()">✓ Finalize</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- AGENDA SETTING -->
+<div class="phase-content" id="phase-agenda">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">📑 Agenda Setting — Motion Handling</div>
+<button class="btn btn-primary btn-sm" onclick="showMotionForm()">+ New Motion</button>
+</div>
+<div class="panel-body">
+<div id="motionsList"></div>
+</div>
+</div>
+</div>
+
+<!-- GSL -->
+<div class="phase-content" id="phase-gsl">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🎤 General Speakers List</div>
+<div style="display:flex;gap:0.5rem">
+<button class="btn btn-sm" onclick="shuffleQueue()">🔀 Shuffle</button>
+<button class="btn btn-primary btn-sm" onclick="addToQueue()">+ Add Speaker</button>
+</div>
+</div>
+<div class="panel-body">
+<div class="timer-controls">
+<label style="font-size:0.8rem;color:var(--text-muted)">Speech Time:</label>
+<input type="number" class="timer-input" id="speechTimeInput" value="60" min="10">
+<span style="font-size:0.8rem;color:var(--text-muted)">sec</span>
+<button class="btn btn-success btn-sm" onclick="startSpeechTimer()">▶ Start</button>
+<button class="btn btn-sm" onclick="pauseSpeechTimer()">⏸ Pause</button>
+<button class="btn btn-danger btn-sm" onclick="stopSpeechTimer()">⏹ Stop</button>
+</div>
+<div class="queue-container">
+<ul class="queue-list" id="gslQueue"></ul>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MODERATED CAUCUS -->
+<div class="phase-content" id="phase-moderated">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">⏱️ Moderated Caucus</div>
+</div>
+<div class="panel-body">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+<div class="form-group">
+<label class="form-label">Topic</label>
+<input type="text" class="form-input" id="caucusTopic" placeholder="Enter caucus topic...">
+</div>
+<div class="form-group">
+<label class="form-label">Duration (minutes)</label>
+<input type="number" class="form-input" id="caucusDuration" value="10" min="1">
+</div>
+</div>
+<div class="timer-controls">
+<button class="btn btn-success btn-lg" onclick="startCaucusTimer()">▶ Start Caucus</button>
+<button class="btn btn-sm" onclick="pauseCaucusTimer()">⏸ Pause</button>
+<button class="btn btn-danger btn-sm" onclick="stopCaucusTimer()">⏹ End</button>
+</div>
+<div style="margin-top:1rem">
+<div class="form-label">Speaking Delegates (Chair selects)</div>
+<div class="rollcall-grid" id="caucusDelegates"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- UNMODERATED CAUCUS -->
+<div class="phase-content" id="phase-unmoderated">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🤝 Unmoderated Caucus</div>
+</div>
+<div class="panel-body" style="text-align:center;padding:3rem 1rem">
+<div style="font-size:4rem;margin-bottom:1rem">🤝</div>
+<h2 style="margin-bottom:0.5rem">Unmoderated Caucus in Progress</h2>
+<p style="color:var(--text-secondary);margin-bottom:2rem">Delegates are free to move and discuss</p>
+<div class="timer-display" id="unmodTimer" style="font-size:3rem;margin:1rem auto;max-width:200px">00:00</div>
+<div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+<button class="btn btn-success btn-lg" onclick="startUnmodTimer()">▶ Start</button>
+<button class="btn btn-sm" onclick="pauseUnmodTimer()">⏸ Pause</button>
+<button class="btn btn-danger btn-sm" onclick="stopUnmodTimer()">⏹ End</button>
+</div>
+<div style="margin-top:2rem;text-align:left;max-width:600px;margin-left:auto;margin-right:auto">
+<div class="form-group">
+<label class="form-label">Caucus Notes</label>
+<textarea class="form-textarea" id="unmodNotes" placeholder="Log informal discussions, alliances..."></textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- DRAFT RESOLUTION -->
+<div class="phase-content" id="phase-resolution">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">📄 Draft Resolution Phase</div>
+<button class="btn btn-primary btn-sm" onclick="showResolutionForm()">+ New Draft</button>
+</div>
+<div class="panel-body">
+<div id="resolutionList"></div>
+</div>
+</div>
+</div>
+
+<!-- PRESENTATION -->
+<div class="phase-content" id="phase-presentation">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🎯 Resolution Presentation</div>
+</div>
+<div class="panel-body">
+<div id="presentationList"></div>
+</div>
+</div>
+</div>
+
+<!-- AMENDMENTS -->
+<div class="phase-content" id="phase-amendments">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">✏️ Amendment Processing</div>
+<button class="btn btn-primary btn-sm" onclick="showAmendmentForm()">+ New Amendment</button>
+</div>
+<div class="panel-body">
+<div id="amendmentList"></div>
+</div>
+</div>
+</div>
+
+<!-- CLOSING DEBATE -->
+<div class="phase-content" id="phase-closing">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🔒 Closing Debate</div>
+</div>
+<div class="panel-body" style="text-align:center;padding:3rem 1rem">
+<div style="font-size:4rem;margin-bottom:1rem">🔒</div>
+<h2 style="margin-bottom:0.5rem">Motion to Close Debate</h2>
+<p style="color:var(--text-secondary);margin-bottom:2rem">Requires 2/3 majority to pass</p>
+<div class="voting-grid" style="max-width:600px;margin:0 auto">
+<div class="vote-card yes" onclick="voteCloseDebate('yes')">
+<div class="vote-label" style="color:var(--green)">Yes</div>
+<div class="vote-count" id="closeYes" style="color:var(--green)">0</div>
+</div>
+<div class="vote-card no" onclick="voteCloseDebate('no')">
+<div class="vote-label" style="color:var(--red)">No</div>
+<div class="vote-count" id="closeNo" style="color:var(--red)">0</div>
+</div>
+<div class="vote-card abstain" onclick="voteCloseDebate('abstain')">
+<div class="vote-label" style="color:var(--yellow)">Abstain</div>
+<div class="vote-count" id="closeAbstain" style="color:var(--yellow)">0</div>
+</div>
+</div>
+<button class="btn btn-primary btn-lg" style="margin-top:1.5rem" onclick="finalizeCloseVote()">Finalize Vote</button>
+</div>
+</div>
+</div>
+
+<!-- VOTING PROCEDURE -->
+<div class="phase-content" id="phase-voting">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🗳️ Voting Procedure</div>
+<div><span style="font-size:0.8rem;color:var(--text-muted)">Voting:</span><span id="votingLockStatus" style="font-size:0.8rem;color:var(--green);font-weight:600">ACTIVE</span></div>
+</div>
+<div class="panel-body">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+<div>
+<label class="form-label">Resolution</label>
+<select class="form-select" id="voteResolutionSelect"><option value="">Select resolution...</option></select>
+</div>
+<div>
+<label class="form-label">Voting Type</label>
+<select class="form-select" id="voteTypeSelect">
+<option value="simple">Simple Majority</option>
+<option value="two-thirds">Two-Thirds Majority</option>
+<option value="consensus">Consensus</option>
+</select>
+</div>
+</div>
+<div class="voting-grid">
+<div class="vote-card yes" onclick="recordVote('yes')">
+<div class="vote-label" style="color:var(--green)">Yes</div>
+<div class="vote-count" id="voteYes" style="color:var(--green)">0</div>
+</div>
+<div class="vote-card no" onclick="recordVote('no')">
+<div class="vote-label" style="color:var(--red)">No</div>
+<div class="vote-count" id="voteNo" style="color:var(--red)">0</div>
+</div>
+<div class="vote-card abstain" onclick="recordVote('abstain')">
+<div class="vote-label" style="color:var(--yellow)">Abstain</div>
+<div class="vote-count" id="voteAbstain" style="color:var(--yellow)">0</div>
+</div>
+</div>
+<div style="text-align:center;margin-top:1.5rem">
+<button class="btn btn-primary btn-lg" onclick="finalizeVoting()">Finalize Result</button>
+<button class="btn btn-sm" onclick="resetVotes()" style="margin-left:0.5rem">Reset</button>
+</div>
+<div id="voteResult" style="margin-top:1rem;text-align:center;font-size:1.1rem;font-weight:700"></div>
+</div>
+</div>
+</div>
+
+<!-- SESSION END -->
+<div class="phase-content" id="phase-end">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">🏁 Session End</div>
+</div>
+<div class="panel-body" style="text-align:center;padding:3rem 1rem">
+<div style="font-size:4rem;margin-bottom:1rem">🏁</div>
+<h2 style="margin-bottom:0.5rem">Session Closed</h2>
+<p style="color:var(--text-secondary);margin-bottom:2rem">All data logged and ready for export</p>
+<div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+<button class="btn btn-primary btn-lg" onclick="exportSession()">📊 Export Report</button>
+<button class="btn btn-success btn-lg" onclick="location.reload()">🔄 New Session</button>
+</div>
+<div style="margin-top:2rem;text-align:left;max-width:600px;margin:2rem auto 0">
+<div class="form-group">
+<label class="form-label">Final Session Notes</label>
+<textarea class="form-textarea" id="finalNotes" placeholder="Enter final observations..."></textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- RIGHT SIDEBAR -->
+<div class="right-panel">
+<div class="panel">
+<div class="panel-header">
+<div class="panel-title">📈 Live Stats</div>
+</div>
+<div class="panel-body">
+<div class="stats-grid">
+<div class="stat-box"><div class="stat-value" id="statPresent">0</div><div class="stat-label">Present</div></div>
+<div class="stat-box"><div class="stat-value" id="statVoting">0</div><div class="stat-label">Voting</div></div>
+<div class="stat-box"><div class="stat-value" id="statSpeeches">0</div><div class="stat-label">Speeches</div></div>
+<div class="stat-box"><div class="stat-value" id="statMotions">0</div><div class="stat-label">Motions</div></div>
+</div>
+</div>
+</div>
+
+<div class="panel" style="margin-top:1rem">
+<div class="panel-header">
+<div class="panel-title">🎯 Recommended</div>
+</div>
+<div class="panel-body">
+<ul class="rec-list" id="recommendedList"></ul>
+</div>
+</div>
+
+<div class="panel" style="margin-top:1rem">
+<div class="panel-header">
+<div class="panel-title">📑 Active Motions</div>
+</div>
+<div class="panel-body">
+<div id="activeMotionsList" style="font-size:0.8rem;color:var(--text-secondary)">
+<div style="text-align:center;padding:1rem">No active motions</div>
+</div>
+</div>
+</div>
+
+<div class="panel" style="margin-top:1rem" id="rapporteurPanel">
+<div class="panel-header">
+<div class="panel-title">📝 Quick Notes</div>
+</div>
+<div class="panel-body">
+<textarea class="form-textarea" id="quickNotes" placeholder="Quick observations..." style="min-height:120px;font-size:0.8rem"></textarea>
+</div>
+</div>
+</div>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ==================== DATA ====================
+const countries = [
+    { name: "Commonwealth of Australia", code: "AU", flag: "https://flagcdn.com/w80/au.png" },
+    { name: "Federative Republic of Brazil", code: "BR", flag: "https://flagcdn.com/w80/br.png" },
+    { name: "Canada", code: "CA", flag: "https://flagcdn.com/w80/ca.png" },
+    { name: "People's Republic of China", code: "CN", flag: "https://flagcdn.com/w80/cn.png" },
+    { name: "Republic of Cuba", code: "CU", flag: "https://flagcdn.com/w80/cu.png" },
+    { name: "Arab Republic of Egypt", code: "EG", flag: "https://flagcdn.com/w80/eg.png" },
+    { name: "French Republic", code: "FR", flag: "https://flagcdn.com/w80/fr.png" },
+    { name: "Federal Republic of Germany", code: "DE", flag: "https://flagcdn.com/w80/de.png" },
+    { name: "Republic of India", code: "IN", flag: "https://flagcdn.com/w80/in.png" },
+    { name: "Islamic Republic of Iran", code: "IR", flag: "https://flagcdn.com/w80/ir.png" },
+    { name: "Japan", code: "JP", flag: "https://flagcdn.com/w80/jp.png" },
+    { name: "Lebanese Republic", code: "LB", flag: "https://flagcdn.com/w80/lb.png" },
+    { name: "United Mexican States", code: "MX", flag: "https://flagcdn.com/w80/mx.png" },
+    { name: "Kingdom of Morocco", code: "MA", flag: "https://flagcdn.com/w80/ma.png" },
+    { name: "Federal Republic of Nigeria", code: "NG", flag: "https://flagcdn.com/w80/ng.png" },
+    { name: "Kingdom of Norway", code: "NO", flag: "https://flagcdn.com/w80/no.png" },
+    { name: "Islamic Republic of Pakistan", code: "PK", flag: "https://flagcdn.com/w80/pk.png" },
+    { name: "State of Qatar", code: "QA", flag: "https://flagcdn.com/w80/qa.png" },
+    { name: "Democratic Republic of the Congo", code: "CD", flag: "https://flagcdn.com/w80/cd.png" },
+    { name: "Russian Federation", code: "RU", flag: "https://flagcdn.com/w80/ru.png" },
+    { name: "Kingdom of Saudi Arabia", code: "SA", flag: "https://flagcdn.com/w80/sa.png" },
+    { name: "Republic of South Africa", code: "ZA", flag: "https://flagcdn.com/w80/za.png" },
+    { name: "Kingdom of Spain", code: "ES", flag: "https://flagcdn.com/w80/es.png" },
+    { name: "Republic of Türkiye", code: "TR", flag: "https://flagcdn.com/w80/tr.png" },
+    { name: "United Kingdom of Great Britain and Northern Ireland", code: "GB", flag: "https://flagcdn.com/w80/gb.png" },
+    { name: "Ukraine", code: "UA", flag: "https://flagcdn.com/w80/ua.png" },
+    { name: "United States of America", code: "US", flag: "https://flagcdn.com/w80/us.png" }
+];
+
+let delegates = countries.map((c, i) => ({
+    id: i, ...c,
+    attendance: 'absent',
+    speeches: 0,
+    placards: 0,
+    lastSpoken: null,
+    inQueue: false
+}));
+
+let currentRole = 'chair';
+let currentPhase = 'rollcall';
+let sessionActive = true;
+let timerInterval = null;
+let timerSeconds = 0;
+let speechTimerInterval = null;
+let speechSeconds = 0;
+let caucusTimerInterval = null;
+let caucusSeconds = 0;
+let unmodTimerInterval = null;
+let unmodSeconds = 0;
+
+let motions = [];
+let resolutions = [];
+let amendments = [];
+let gslQueue = [];
+let sessionLogEntries = [];
+let closeDebateVotes = { yes: 0, no: 0, abstain: 0 };
+let resolutionVotes = { yes: 0, no: 0, abstain: 0 };
+let currentSpeakingIdx = -1;
+let pendingAction = null;
+
+const roleNames = {
+    chair: '👔 Chair',
+    cochair: '📝 Co-Chair',
+    secretary: '✋ Secretary',
+    rapporteur: '📋 Rapporteur'
+};
+
+const phaseNames = {
+    rollcall: 'Roll Call',
+    agenda: 'Agenda Setting',
+    gsl: 'General Speakers List',
+    moderated: 'Moderated Caucus',
+    unmoderated: 'Unmoderated Caucus',
+    resolution: 'Draft Resolution',
+    presentation: 'Resolution Presentation',
+    amendments: 'Amendments',
+    closing: 'Closing Debate',
+    voting: 'Voting Procedure',
+    end: 'Session End'
+};
+
+// ==================== UTILITY ====================
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function getCountryOptions() {
+    return delegates.map(d => `<option value="${d.id}">${d.flag.includes('http') ? '' : ''}${d.name}</option>`).join('');
+}
+
+function getPresentDelegates() {
+    return delegates.filter(d => d.attendance !== 'absent');
+}
+
+function getVotingDelegates() {
+    return delegates.filter(d => d.attendance === 'voting');
+}
+
+// ==================== ROLE ====================
+function selectRole(role) {
+    currentRole = role;
+    document.getElementById('roleSelector').classList.remove('active');
+    document.getElementById('roleBadge').textContent = roleNames[role];
+    document.getElementById('rapporteurPanel').style.display = role === 'rapporteur' ? 'block' : 'none';
+    logEvent(`Role changed to ${roleNames[role].split(' ').slice(1).join(' ')}`);
+    showToast(`Logged in as ${roleNames[role].split(' ').slice(1).join(' ')}`, 'success');
+    renderAll();
+}
+
+function showRoleSelector() {
+    document.getElementById('roleSelector').classList.add('active');
+}
+
+// ==================== PHASE ====================
+function switchPhase(phase) {
+    if (!sessionActive && phase !== 'end') {
+        showToast('Session is closed', 'warning');
+        return;
+    }
+    currentPhase = phase;
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-phase="${phase}"]`).classList.add('active');
+    document.querySelectorAll('.phase-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(`phase-${phase}`).classList.add('active');
+    document.getElementById('currentPhase').textContent = phaseNames[phase];
+    document.querySelectorAll('.nav-status').forEach(el => el.classList.add('inactive'));
+    const statusEl = document.getElementById(`status-${phase}`);
+    if (statusEl) statusEl.classList.remove('inactive');
+    logEvent(`Phase: ${phaseNames[phase]}`);
+    renderAll();
+}
+
+// ==================== ROLL CALL ====================
+function renderRollCall() {
+    const grid = document.getElementById('rollcallGrid');
+    const present = delegates.filter(d => d.attendance !== 'absent').length;
+    const voting = delegates.filter(d => d.attendance === 'voting').length;
+    document.getElementById('rollcallProgress').textContent = `${present}/${delegates.length} Present (${voting} Voting)`;
+    document.getElementById('rollcallBar').style.width = `${(present / delegates.length) * 100}%`;
+
+    grid.innerHTML = delegates.map(d => {
+        const presentClass = d.attendance === 'present' ? 'present' : d.attendance === 'voting' ? 'voting' : 'absent';
+        const canEdit = currentRole === 'cochair' || currentRole === 'secretary';
+        return `
+            <div class="delegate-card ${presentClass}" id="rc-${d.id}">
+                <div class="flag-container">
+                    <img src="${d.flag}" alt="${d.code}" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:1.5rem>🏳️</span>'">
+                </div>
+                <div class="delegate-info">
+                    <div class="delegate-name" title="${d.name}">${d.name}</div>
+                    <div class="delegate-code">${d.code}</div>
+                </div>
+                <div class="delegate-actions">
+                    <button class="status-btn ${d.attendance === 'present' ? 'active-present' : ''}" onclick="setAttendance(${d.id},'present')" ${!canEdit ? 'disabled' : ''}>Present</button>
+                    <button class="status-btn ${d.attendance === 'voting' ? 'active-voting' : ''}" onclick="setAttendance(${d.id},'voting')" ${!canEdit ? 'disabled' : ''}>Voting</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function setAttendance(id, status) {
+    const d = delegates.find(x => x.id === id);
+    if (!d) return;
+    d.attendance = status;
+    logEvent(`${d.name}: ${status}`);
+    renderRollCall();
+    updateStats();
+}
+
+function markAllPresent() {
+    delegates.forEach(d => d.attendance = 'present');
+    logEvent('All delegates marked Present');
+    showToast('All delegates marked Present', 'success');
+    renderRollCall();
+    updateStats();
+}
+
+function resetAttendance() {
+    delegates.forEach(d => d.attendance = 'absent');
+    logEvent('Attendance reset');
+    showToast('Attendance reset', 'warning');
+    renderRollCall();
+    updateStats();
+}
+
+function finalizeRollCall() {
+    const present = delegates.filter(d => d.attendance !== 'absent').length;
+    if (present < delegates.length / 2) {
+        showToast('Quorum not met! Need majority present.', 'error');
+        return;
+    }
+    logEvent(`Roll Call finalized: ${present} present`);
+    showToast(`Roll Call finalized: ${present} delegates present`, 'success');
+}
+
+// ==================== AGENDA / MOTIONS ====================
+function renderMotions() {
+    const list = document.getElementById('motionsList');
+    if (motions.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No motions submitted yet</div>';
+        return;
+    }
+    list.innerHTML = motions.map((m, i) => {
+        const statusBadge = m.seconded 
+            ? (m.passed === true ? '<span class="badge badge-passed">Passed</span>' : m.passed === false ? '<span class="badge badge-failed">Failed</span>' : '<span class="badge badge-seconded">Seconded</span>')
+            : '<span class="badge badge-pending">Pending Second</span>';
+        const canAct = currentRole === 'chair' || currentRole === 'cochair';
+        return `
+            <div class="motion-card">
+                <div class="motion-header">
+                    <div>
+                        <div class="motion-title">${m.type} — ${m.details || 'No details'}</div>
+                        <div class="motion-meta">Proposer: ${m.proposer} | Seconder: ${m.seconder || 'None'} | ${new Date(m.time).toLocaleTimeString()}</div>
+                    </div>
+                    <div>${statusBadge}</div>
+                </div>
+                <div class="motion-actions">
+                    ${!m.seconded ? `<button class="btn btn-sm btn-success" onclick="secondMotion(${i})" ${!canAct ? 'disabled' : ''}>✓ Second</button>` : ''}
+                    ${m.seconded && m.passed === null ? `
+                        <button class="btn btn-sm btn-success" onclick="voteMotion(${i},true)" ${!canAct ? 'disabled' : ''}>Pass</button>
+                        <button class="btn btn-sm btn-danger" onclick="voteMotion(${i},false)" ${!canAct ? 'disabled' : ''}>Fail</button>
+                    ` : ''}
+                    <button class="btn btn-sm" onclick="removeMotion(${i})" ${!canAct ? 'disabled' : ''}>🗑️ Remove</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function showMotionForm() {
+    document.getElementById('motionProposer').innerHTML = getCountryOptions();
+    document.getElementById('motionSeconder').innerHTML = '<option value="">None yet</option>' + getCountryOptions();
+    document.getElementById('motionModal').classList.add('active');
+}
+
+function submitMotion() {
+    const type = document.getElementById('motionType').value;
+    const proposerId = document.getElementById('motionProposer').value;
+    const seconderId = document.getElementById('motionSeconder').value;
+    const details = document.getElementById('motionDetails').value;
+    const proposer = delegates.find(d => d.id == proposerId);
+    const seconder = seconderId ? delegates.find(d => d.id == seconderId) : null;
+
+    motions.push({
+        type: type,
+        proposer: proposer ? proposer.name : 'Unknown',
+        seconder: seconder ? seconder.name : null,
+        details: details,
+        time: Date.now(),
+        seconded: !!seconder,
+        passed: null
+    });
+
+    logEvent(`Motion submitted: ${type} by ${proposer ? proposer.name : 'Unknown'}`);
+    showToast('Motion submitted', 'success');
+    closeModal('motionModal');
+    renderMotions();
+    updateStats();
+    updateActiveMotions();
+}
+
+function secondMotion(idx) {
+    motions[idx].seconded = true;
+    logEvent(`Motion seconded: ${motions[idx].type}`);
+    showToast('Motion seconded', 'success');
+    renderMotions();
+    updateActiveMotions();
+}
+
+function voteMotion(idx, passed) {
+    motions[idx].passed = passed;
+    logEvent(`Motion ${passed ? 'passed' : 'failed'}: ${motions[idx].type}`);
+    showToast(`Motion ${passed ? 'passed' : 'failed'}`, passed ? 'success' : 'warning');
+    renderMotions();
+    updateActiveMotions();
+}
+
+function removeMotion(idx) {
+    motions.splice(idx, 1);
+    renderMotions();
+    updateStats();
+    updateActiveMotions();
+}
+
+// ==================== GSL ====================
+function renderGSL() {
+    const list = document.getElementById('gslQueue');
+    if (gslQueue.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No speakers in queue</div>';
+        return;
+    }
+    list.innerHTML = gslQueue.map((id, idx) => {
+        const d = delegates.find(x => x.id === id);
+        const isSpeaking = idx === currentSpeakingIdx;
+        return `
+            <li class="queue-item ${isSpeaking ? 'speaking' : ''}" id="queue-${idx}">
+                <span class="queue-drag">⋮⋮</span>
+                <div class="queue-number">${idx + 1}</div>
+                <div class="flag-container" style="width:32px;height:24px">
+                    <img src="${d.flag}" alt="${d.code}" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:1rem>🏳️</span>'">
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:0.85rem">${d.name}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">${d.speeches} speeches</div>
+                </div>
+                ${isSpeaking ? '<span style="color:var(--green);font-size:0.75rem;font-weight:700">● SPEAKING</span>' : ''}
+                <span class="queue-remove" onclick="removeFromQueue(${idx})">✕</span>
+            </li>
+        `;
+    }).join('');
+}
+
+function addToQueue() {
+    const present = getPresentDelegates();
+    if (present.length === 0) {
+        showToast('No delegates present', 'warning');
+        return;
+    }
+    document.getElementById('speakerSelect').innerHTML = present.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+    document.getElementById('speakerModal').classList.add('active');
+}
+
+function confirmAddSpeaker() {
+    const id = parseInt(document.getElementById('speakerSelect').value);
+    if (!isNaN(id)) {
+        gslQueue.push(id);
+        const d = delegates.find(x => x.id === id);
+        logEvent(`Added to GSL: ${d.name}`);
+        showToast(`${d.name} added to speakers list`, 'success');
+    }
+    closeModal('speakerModal');
+    renderGSL();
+}
+
+function removeFromQueue(idx) {
+    const id = gslQueue[idx];
+    gslQueue.splice(idx, 1);
+    if (currentSpeakingIdx === idx) currentSpeakingIdx = -1;
+    else if (currentSpeakingIdx > idx) currentSpeakingIdx--;
+    const d = delegates.find(x => x.id === id);
+    logEvent(`Removed from GSL: ${d ? d.name : 'Unknown'}`);
+    renderGSL();
+}
+
+function shuffleQueue() {
+    for (let i = gslQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gslQueue[i], gslQueue[j]] = [gslQueue[j], gslQueue[i]];
+    }
+    logEvent('GSL queue shuffled');
+    showToast('Queue shuffled', 'success');
+    renderGSL();
+}
+
+function startSpeechTimer() {
+    if (gslQueue.length === 0) {
+        showToast('No speakers in queue', 'warning');
+        return;
+    }
+    if (currentSpeakingIdx === -1) currentSpeakingIdx = 0;
+    speechSeconds = parseInt(document.getElementById('speechTimeInput').value) || 60;
+    if (speechTimerInterval) clearInterval(speechTimerInterval);
+    speechTimerInterval = setInterval(() => {
+        speechSeconds--;
+        document.getElementById('mainTimer').textContent = formatTime(speechSeconds);
+        if (speechSeconds <= 10) document.getElementById('mainTimer').classList.add('critical');
+        else if (speechSeconds <= 30) document.getElementById('mainTimer').classList.add('warning');
+        if (speechSeconds <= 0) {
+            clearInterval(speechTimerInterval);
+            speechTimerInterval = null;
+            document.getElementById('mainTimer').classList.remove('critical', 'warning');
+            showToast('Speech time expired!', 'warning');
+        }
+    }, 1000);
+    renderGSL();
+    logEvent('Speech timer started');
+}
+
+function pauseSpeechTimer() {
+    if (speechTimerInterval) {
+        clearInterval(speechTimerInterval);
+        speechTimerInterval = null;
+        logEvent('Speech timer paused');
+    }
+}
+
+function stopSpeechTimer() {
+    if (speechTimerInterval) {
+        clearInterval(speechTimerInterval);
+        speechTimerInterval = null;
+    }
+    if (currentSpeakingIdx >= 0 && currentSpeakingIdx < gslQueue.length) {
+        const id = gslQueue[currentSpeakingIdx];
+        const d = delegates.find(x => x.id === id);
+        if (d) {
+            d.speeches++;
+            d.lastSpoken = Date.now();
+            logEvent(`Speech completed: ${d.name}`);
+        }
+    }
+    currentSpeakingIdx++;
+    if (currentSpeakingIdx >= gslQueue.length) currentSpeakingIdx = -1;
+    document.getElementById('mainTimer').textContent = '00:00';
+    document.getElementById('mainTimer').classList.remove('critical', 'warning');
+    renderGSL();
+    updateStats();
+    updateRecommended();
+}
+
+// ==================== MODERATED CAUCUS ====================
+function renderCaucusDelegates() {
+    const grid = document.getElementById('caucusDelegates');
+    const present = getPresentDelegates();
+    grid.innerHTML = present.map(d => `
+        <div class="delegate-card">
+            <div class="flag-container">
+                <img src="${d.flag}" alt="${d.code}" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:1.5rem>🏳️</span>'">
+            </div>
+            <div class="delegate-info">
+                <div class="delegate-name">${d.name}</div>
+                <div class="delegate-code">${d.speeches} speeches</div>
+            </div>
+            <div class="delegate-actions">
+                <button class="btn btn-sm btn-success" onclick="caucusSpeech(${d.id})">+1 Speech</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function caucusSpeech(id) {
+    const d = delegates.find(x => x.id === id);
+    if (!d) return;
+    d.speeches++;
+    d.lastSpoken = Date.now();
+    logEvent(`Moderated caucus speech: ${d.name}`);
+    showToast(`${d.name} spoke in caucus`, 'success');
+    renderCaucusDelegates();
+    updateStats();
+    updateRecommended();
+}
+
+function startCaucusTimer() {
+    const mins = parseInt(document.getElementById('caucusDuration').value) || 10;
+    caucusSeconds = mins * 60;
+    if (caucusTimerInterval) clearInterval(caucusTimerInterval);
+    caucusTimerInterval = setInterval(() => {
+        caucusSeconds--;
+        document.getElementById('mainTimer').textContent = formatTime(caucusSeconds);
+        if (caucusSeconds <= 0) {
+            clearInterval(caucusTimerInterval);
+            caucusTimerInterval = null;
+            showToast('Caucus time expired!', 'warning');
+        }
+    }, 1000);
+    logEvent(`Moderated caucus started: ${mins} min`);
+}
+
+function pauseCaucusTimer() {
+    if (caucusTimerInterval) {
+        clearInterval(caucusTimerInterval);
+        caucusTimerInterval = null;
+        logEvent('Caucus timer paused');
+    }
+}
+
+function stopCaucusTimer() {
+    if (caucusTimerInterval) {
+        clearInterval(caucusTimerInterval);
+        caucusTimerInterval = null;
+    }
+    document.getElementById('mainTimer').textContent = '00:00';
+    logEvent('Moderated caucus ended');
+    showToast('Caucus ended', 'success');
+}
+
+// ==================== UNMODERATED CAUCUS ====================
+function startUnmodTimer() {
+    const mins = parseInt(document.getElementById('caucusDuration').value) || 10;
+    unmodSeconds = mins * 60;
+    if (unmodTimerInterval) clearInterval(unmodTimerInterval);
+    unmodTimerInterval = setInterval(() => {
+        unmodSeconds--;
+        document.getElementById('unmodTimer').textContent = formatTime(unmodSeconds);
+        document.getElementById('mainTimer').textContent = formatTime(unmodSeconds);
+        if (unmodSeconds <= 0) {
+            clearInterval(unmodTimerInterval);
+            unmodTimerInterval = null;
+            showToast('Unmoderated caucus time expired!', 'warning');
+        }
+    }, 1000);
+    logEvent(`Unmoderated caucus started: ${mins} min`);
+}
+
+function pauseUnmodTimer() {
+    if (unmodTimerInterval) {
+        clearInterval(unmodTimerInterval);
+        unmodTimerInterval = null;
+        logEvent('Unmod caucus paused');
+    }
+}
+
+function stopUnmodTimer() {
+    if (unmodTimerInterval) {
+        clearInterval(unmodTimerInterval);
+        unmodTimerInterval = null;
+    }
+    document.getElementById('unmodTimer').textContent = '00:00';
+    document.getElementById('mainTimer').textContent = '00:00';
+    logEvent('Unmoderated caucus ended');
+    showToast('Unmoderated caucus ended', 'success');
+}
+
+// ==================== RESOLUTIONS ====================
+function renderResolutions() {
+    const list = document.getElementById('resolutionList');
+    if (resolutions.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No draft resolutions registered</div>';
+        return;
+    }
+    list.innerHTML = resolutions.map((r, i) => `
+        <div class="doc-item">
+            <div class="doc-icon">📄</div>
+            <div class="doc-info">
+                <div class="doc-title">${r.id} — ${r.sponsor}</div>
+                <div class="doc-meta">Signatories: ${r.signatories} | ${r.status}</div>
+            </div>
+            <div class="delegate-actions">
+                <button class="btn btn-sm" onclick="presentResolution(${i})">🎯 Present</button>
+                <button class="btn btn-sm btn-danger" onclick="removeResolution(${i})">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+    updateVoteResolutionSelect();
+}
+
+function showResolutionForm() {
+    document.getElementById('resolutionSponsor').innerHTML = getCountryOptions();
+    document.getElementById('resolutionModal').classList.add('active');
+}
+
+function submitResolution() {
+    const id = document.getElementById('draftId').value || `Draft ${resolutions.length + 1}.1`;
+    const sponsorId = document.getElementById('resolutionSponsor').value;
+    const sponsor = delegates.find(d => d.id == sponsorId);
+    resolutions.push({
+        id: id,
+        sponsor: sponsor ? sponsor.name : 'Unknown',
+        signatories: document.getElementById('resolutionSignatories').value,
+        content: document.getElementById('resolutionContent').value,
+        status: 'Registered',
+        time: Date.now()
+    });
+    logEvent(`Draft resolution registered: ${id}`);
+    showToast('Draft resolution registered', 'success');
+    closeModal('resolutionModal');
+    renderResolutions();
+}
+
+function presentResolution(idx) {
+    resolutions[idx].status = 'Presented';
+    logEvent(`Resolution presented: ${resolutions[idx].id}`);
+    showToast(`Resolution ${resolutions[idx].id} presented`, 'success');
+    renderResolutions();
+    renderPresentations();
+}
+
+function removeResolution(idx) {
+    resolutions.splice(idx, 1);
+    renderResolutions();
+}
+
+function renderPresentations() {
+    const list = document.getElementById('presentationList');
+    const presented = resolutions.filter(r => r.status === 'Presented');
+    if (presented.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No resolutions presented yet</div>';
+        return;
+    }
+    list.innerHTML = presented.map((r, i) => `
+        <div class="motion-card">
+            <div class="motion-header">
+                <div>
+                    <div class="motion-title">${r.id}</div>
+                    <div class="motion-meta">Sponsor: ${r.sponsor} | Presented at ${new Date(r.time).toLocaleTimeString()}</div>
+                </div>
+                <span class="badge badge-passed">Presented</span>
+            </div>
+            <div class="motion-actions">
+                <button class="btn btn-sm btn-success" onclick="logEvent('Presentation timed: ${r.id}')">⏱️ Time Presentation</button>
+                <button class="btn btn-sm" onclick="logEvent('Presentation logged: ${r.id}')">📝 Log</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateVoteResolutionSelect() {
+    const select = document.getElementById('voteResolutionSelect');
+    select.innerHTML = '<option value="">Select resolution...</option>' + 
+        resolutions.map(r => `<option value="${r.id}">${r.id} — ${r.sponsor}</option>`).join('');
+}
+
+// ==================== AMENDMENTS ====================
+function renderAmendments() {
+    const list = document.getElementById('amendmentList');
+    if (amendments.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No amendments submitted</div>';
+        return;
+    }
+    list.innerHTML = amendments.map((a, i) => {
+        const typeBadge = a.type === 'friendly' ? '<span class="badge badge-friendly">Friendly</span>' : '<span class="badge badge-unfriendly">Unfriendly</span>';
+        const outcomeBadge = a.outcome === 'passed' ? '<span class="badge badge-passed">Passed</span>' : a.outcome === 'failed' ? '<span class="badge badge-failed">Failed</span>' : '<span class="badge badge-pending">Pending</span>';
+        const autoApply = a.type === 'friendly' && !a.outcome;
+        return `
+            <div class="motion-card">
+                <div class="motion-header">
+                    <div>
+                        <div class="motion-title">Amendment to ${a.target} — ${typeBadge}</div>
+                        <div class="motion-meta">Proposer: ${a.proposer} | ${outcomeBadge}</div>
+                    </div>
+                </div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">${a.content}</div>
+                <div class="motion-actions">
+                    ${autoApply ? `<button class="btn btn-sm btn-success" onclick="applyAmendment(${i})">✓ Auto-Apply (Friendly)</button>` : ''}
+                    ${a.type === 'unfriendly' && !a.outcome ? `
+                        <button class="btn btn-sm btn-success" onclick="voteAmendment(${i},'passed')">Pass</button>
+                        <button class="btn btn-sm btn-danger" onclick="voteAmendment(${i},'failed')">Fail</button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function showAmendmentForm() {
+    document.getElementById('amendmentTarget').innerHTML = resolutions.map(r => `<option value="${r.id}">${r.id}</option>`).join('');
+    document.getElementById('amendmentProposer').innerHTML = getCountryOptions();
+    document.getElementById('amendmentModal').classList.add('active');
+}
+
+function submitAmendment() {
+    const target = document.getElementById('amendmentTarget').value;
+    const type = document.getElementById('amendmentType').value;
+    const proposerId = document.getElementById('amendmentProposer').value;
+    const proposer = delegates.find(d => d.id == proposerId);
+    amendments.push({
+        target: target,
+        type: type,
+        proposer: proposer ? proposer.name : 'Unknown',
+        content: document.getElementById('amendmentContent').value,
+        outcome: null,
+        time: Date.now()
+    });
+    logEvent(`Amendment submitted: ${type} to ${target}`);
+    showToast('Amendment submitted', 'success');
+    closeModal('amendmentModal');
+    renderAmendments();
+}
+
+function applyAmendment(idx) {
+    amendments[idx].outcome = 'passed';
+    logEvent(`Friendly amendment auto-applied: ${amendments[idx].target}`);
+    showToast('Friendly amendment applied', 'success');
+    renderAmendments();
+}
+
+function voteAmendment(idx, outcome) {
+    amendments[idx].outcome = outcome;
+    logEvent(`Amendment ${outcome}: ${amendments[idx].target}`);
+    showToast(`Amendment ${outcome}`, outcome === 'passed' ? 'success' : 'warning');
+    renderAmendments();
+}
+
+// ==================== CLOSING DEBATE ====================
+function voteCloseDebate(vote) {
+    closeDebateVotes[vote]++;
+    document.getElementById('closeYes').textContent = closeDebateVotes.yes;
+    document.getElementById('closeNo').textContent = closeDebateVotes.no;
+    document.getElementById('closeAbstain').textContent = closeDebateVotes.abstain;
+    logEvent(`Close debate vote: ${vote}`);
+}
+
+function finalizeCloseVote() {
+    const total = closeDebateVotes.yes + closeDebateVotes.no + closeDebateVotes.abstain;
+    const voting = getVotingDelegates().length;
+    const threshold = Math.ceil(voting * 2 / 3);
+    const passed = closeDebateVotes.yes >= threshold;
+    logEvent(`Close debate motion ${passed ? 'PASSED' : 'FAILED'} (${closeDebateVotes.yes}/${threshold} needed)`);
+    showToast(`Close debate motion ${passed ? 'PASSED' : 'FAILED'}`, passed ? 'success' : 'warning');
+}
+
+// ==================== VOTING PROCEDURE ====================
+function recordVote(vote) {
+    resolutionVotes[vote]++;
+    document.getElementById('voteYes').textContent = resolutionVotes.yes;
+    document.getElementById('voteNo').textContent = resolutionVotes.no;
+    document.getElementById('voteAbstain').textContent = resolutionVotes.abstain;
+    logEvent(`Resolution vote recorded: ${vote}`);
+}
+
+function resetVotes() {
+    resolutionVotes = { yes: 0, no: 0, abstain: 0 };
+    document.getElementById('voteYes').textContent = '0';
+    document.getElementById('voteNo').textContent = '0';
+    document.getElementById('voteAbstain').textContent = '0';
+    document.getElementById('voteResult').textContent = '';
+    showToast('Votes reset', 'warning');
+}
+
+function finalizeVoting() {
+    const type = document.getElementById('voteTypeSelect').value;
+    const resolution = document.getElementById('voteResolutionSelect').value;
+    const voting = getVotingDelegates().length;
+    const total = resolutionVotes.yes + resolutionVotes.no;
+    let passed = false;
+    let threshold = 0;
+
+    if (type === 'simple') {
+        threshold = Math.floor(total / 2) + 1;
+        passed = resolutionVotes.yes >= threshold;
+    } else if (type === 'two-thirds') {
+        threshold = Math.ceil(total * 2 / 3);
+        passed = resolutionVotes.yes >= threshold;
+    } else if (type === 'consensus') {
+        passed = resolutionVotes.no === 0 && resolutionVotes.yes > 0;
+        threshold = 'consensus';
+    }
+
+    const resultText = passed 
+        ? `✅ RESOLUTION PASSED (${resolutionVotes.yes} Yes / ${threshold} needed)` 
+        : `❌ RESOLUTION FAILED (${resolutionVotes.yes} Yes / ${threshold} needed)`;
+
+    document.getElementById('voteResult').innerHTML = `
+        <div style="color:${passed ? 'var(--green)' : 'var(--red)'};margin-top:1rem">
+            ${resultText}<br>
+            <span style="font-size:0.85rem;color:var(--text-secondary)">
+                Yes: ${resolutionVotes.yes} | No: ${resolutionVotes.no} | Abstain: ${resolutionVotes.abstain}
+            </span>
+        </div>
+    `;
+    logEvent(`Voting finalized: ${resolution} — ${passed ? 'PASSED' : 'FAILED'}`);
+    showToast(`Resolution ${passed ? 'PASSED' : 'FAILED'}`, passed ? 'success' : 'warning');
+}
+
+// ==================== MAIN TIMER ====================
+function toggleTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('timerBtn').textContent = '⏵ Start';
+    } else {
+        timerInterval = setInterval(() => {
+            timerSeconds++;
+            document.getElementById('mainTimer').textContent = formatTime(timerSeconds);
+        }, 1000);
+        document.getElementById('timerBtn').textContent = '⏸ Pause';
+    }
+}
+
+function resetTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    timerSeconds = 0;
+    document.getElementById('mainTimer').textContent = '00:00';
+    document.getElementById('timerBtn').textContent = '⏵ Start';
+}
+
+// ==================== STATS & RECOMMENDED ====================
+function updateStats() {
+    const present = delegates.filter(d => d.attendance !== 'absent').length;
+    const voting = delegates.filter(d => d.attendance === 'voting').length;
+    const speeches = delegates.reduce((sum, d) => sum + d.speeches, 0);
+    document.getElementById('statPresent').textContent = present;
+    document.getElementById('statVoting').textContent = voting;
+    document.getElementById('statSpeeches').textContent = speeches;
+    document.getElementById('statMotions').textContent = motions.length;
+}
+
+function updateRecommended() {
+    const list = document.getElementById('recommendedList');
+    const recommended = [...delegates]
+        .filter(d => d.attendance !== 'absent')
+        .sort((a, b) => {
+            if (a.speeches !== b.speeches) return a.speeches - b.speeches;
+            const timeA = a.lastSpoken || 0;
+            const timeB = b.lastSpoken || 0;
+            return timeA - timeB;
+        })
+        .slice(0, 5);
+
+    list.innerHTML = recommended.map((d, idx) => {
+        const rankClass = idx === 0 ? 'rank-gold' : idx === 1 ? 'rank-silver' : idx === 2 ? 'rank-bronze' : 'rank-other';
+        const waitTime = d.lastSpoken ? `${Math.floor((Date.now() - d.lastSpoken) / 60000)}m wait` : 'Not spoken';
+        return `
+            <li class="rec-item" onclick="highlightCountry(${d.id})">
+                <div class="rec-rank ${rankClass}">${idx + 1}</div>
+                <div class="flag-container" style="width:28px;height:20px">
+                    <img src="${d.flag}" alt="${d.code}" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:0.8rem>🏳️</span>'">
+                </div>
+                <div class="rec-name">${d.name}</div>
+                <div class="rec-stats">${d.speeches} spk<br>${waitTime}</div>
+            </li>
+        `;
+    }).join('');
+}
+
+function updateActiveMotions() {
+    const list = document.getElementById('activeMotionsList');
+    const active = motions.filter(m => m.seconded && m.passed === null);
+    if (active.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:1rem">No active motions</div>';
+        return;
+    }
+    list.innerHTML = active.map(m => `
+        <div style="padding:0.5rem;border-bottom:1px solid var(--border)">
+            <div style="font-weight:600">${m.type}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">${m.proposer} → ${m.details || 'No details'}</div>
+        </div>
+    `).join('');
+}
+
+function highlightCountry(id) {
+    switchPhase('gsl');
+    setTimeout(() => {
+        const card = document.getElementById(`rc-${id}`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.style.borderColor = 'var(--purple)';
+            setTimeout(() => card.style.borderColor = '', 1500);
+        }
+    }, 100);
+}
+
+// ==================== SESSION LOG ====================
+function logEvent(message) {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    sessionLogEntries.push({ time, message });
+    const log = document.getElementById('sessionLog');
+    const entry = document.createElement('div');
+    entry.style.cssText = 'padding:0.5rem;border-bottom:1px solid var(--border)';
+    entry.innerHTML = `<span style="color:var(--text-muted)">[${time}]</span> ${message}`;
+    log.insertBefore(entry, log.firstChild);
+}
+
+// ==================== MODAL ====================
+function closeModal(id) {
+    if (id) document.getElementById(id).classList.remove('active');
+    else document.getElementById('confirmModal').classList.remove('active');
+    pendingAction = null;
+}
+
+function showResetConfirm() {
+    pendingAction = 'reset';
+    document.getElementById('modalTitle').textContent = 'Reset Session Data';
+    document.getElementById('modalMessage').textContent = 'This will reset all data. This action cannot be undone.';
+    document.getElementById('modalConfirmBtn').textContent = 'Reset All';
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+function confirmAction() {
+    if (pendingAction === 'reset') {
+        delegates.forEach(d => { d.attendance = 'absent'; d.speeches = 0; d.placards = 0; d.lastSpoken = null; d.inQueue = false; });
+        motions = []; resolutions = []; amendments = []; gslQueue = [];
+        closeDebateVotes = { yes: 0, no: 0, abstain: 0 };
+        resolutionVotes = { yes: 0, no: 0, abstain: 0 };
+        currentSpeakingIdx = -1;
+        sessionLogEntries = [];
+        document.getElementById('sessionLog').innerHTML = '<div style="padding:0.5rem;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted)">[Reset]</span> Session data cleared</div>';
+        showToast('All session data reset', 'warning');
+        renderAll();
+    }
+    closeModal();
+}
+
+// ==================== EXPORT ====================
+function exportSession() {
+    const data = {
+        timestamp: new Date().toISOString(),
+        delegates: delegates.map(d => ({
+            country: d.name,
+            code: d.code,
+            attendance: d.attendance,
+            speeches: d.speeches,
+            lastSpoken: d.lastSpoken ? new Date(d.lastSpoken).toLocaleString() : 'Never'
+        })),
+        motions: motions,
+        resolutions: resolutions,
+        amendments: amendments,
+        log: sessionLogEntries,
+        stats: {
+            totalSpeeches: delegates.reduce((s, d) => s + d.speeches, 0),
+            totalPresent: delegates.filter(d => d.attendance !== 'absent').length,
+            totalVoting: delegates.filter(d => d.attendance === 'voting').length
+        }
+    };
+
+    const csv = [
+        'MUN SESSION REPORT',
+        `Generated: ${new Date().toLocaleString()}`,
+        '',
+        'DELEGATE PARTICIPATION',
+        'Country,Code,Attendance,Speeches,Last Spoken',
+        ...data.delegates.map(d => `"${d.country}","${d.code}","${d.attendance}",${d.speeches},"${d.lastSpoken}"`),
+        '',
+        'MOTIONS',
+        'Type,Proposer,Seconder,Details,Status',
+        ...motions.map(m => `"${m.type}","${m.proposer}","${m.seconder || ''}","${m.details || ''}","${m.passed === true ? 'Passed' : m.passed === false ? 'Failed' : m.seconded ? 'Seconded' : 'Pending'}"`),
+        '',
+        'RESOLUTIONS',
+        'ID,Sponsor,Signatories,Status',
+        ...resolutions.map(r => `"${r.id}","${r.sponsor}","${r.signatories}","${r.status}"`),
+        '',
+        'SESSION LOG',
+        'Time,Event',
+        ...sessionLogEntries.map(e => `"${e.time}","${e.message}"`)
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MUN_Session_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Session report exported', 'success');
+}
+
+// ==================== TOAST ====================
+function showToast(message, type) {
+    const container = document.getElementById('toastContainer');
+    const icons = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// ==================== RENDER ALL ====================
+function renderAll() {
+    renderRollCall();
+    renderMotions();
+    renderGSL();
+    renderCaucusDelegates();
+    renderResolutions();
+    renderPresentations();
+    renderAmendments();
+    updateStats();
+    updateRecommended();
+    updateActiveMotions();
+}
+
+// ==================== INIT ====================
+renderAll();
+
+// Auto-update timestamps
+setInterval(() => {
+    updateRecommended();
+}, 30000);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    }
+});
+
+// BroadcastChannel for multi-tab sync
+let bc;
+try {
+    bc = new BroadcastChannel('mun_dais_sync');
+    bc.onmessage = (event) => {
+        if (event.data.type === 'update') {
+            delegates = event.data.delegates;
+            motions = event.data.motions;
+            resolutions = event.data.resolutions;
+            amendments = event.data.amendments;
+            renderAll();
+        }
+    };
+} catch (e) { console.log('BroadcastChannel not supported'); }
+
+function syncData() {
+    if (bc) {
+        bc.postMessage({ type: 'update', delegates, motions, resolutions, amendments });
+    }
+}
+</script>
+</body>
+</html>
+
+</html>
